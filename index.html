@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Naresh Rana Chat</title>
+  <style>
+    body { margin:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#f5f7fa; display:flex; justify-content:center; align-items:center; height:100vh; }
+    #login-container { background:white; padding:40px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.15); width:90%; max-width:400px; text-align:center; }
+    h1 { color:#4b7bec; margin-bottom:20px; font-size:28px; }
+    input { width:100%; padding:12px 15px; margin:10px 0; border:1px solid #ccc; border-radius:8px; font-size:16px; }
+    button { width:100%; padding:12px; border:none; border-radius:8px; background:#4b7bec; color:white; font-size:16px; cursor:pointer; transition:0.2s; }
+    button:hover { background:#3a63c7; }
+    #errorMsg { color:red; margin-top:10px; font-size:0.9rem; }
+  </style>
+</head>
+<body>
+
+<div id="login-container">
+  <h1>Naresh Rana Chat</h1>
+  <input type="text" id="username" placeholder="Username" />
+  <input type="password" id="password" placeholder="Password" />
+  <button id="loginBtn">Login</button>
+  <p id="errorMsg"></p>
+</div>
+
+<script>
+  // Only allowed users
+  const allowedUsers = [
+    { username: 'user1', password: 'pass123' },
+    { username: 'user2', password: 'pass456' }
+  ];
+
+  const loginBtn = document.getElementById('loginBtn');
+  const errorMsg = document.getElementById('errorMsg');
+
+  loginBtn.addEventListener('click', () => {
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value.trim();
+    const user = allowedUsers.find(user => user.username === u && user.password === p);
+
+    if(user){
+      // ✅ Login success → redirect to main.html
+      window.location.href = 'main.html';
+    } else {
+      errorMsg.textContent = 'Invalid username or password';
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Enter') loginBtn.click();
+  });
+</script>
+
+</body>
+</html>
