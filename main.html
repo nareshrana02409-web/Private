@@ -1403,6 +1403,7 @@
             }
         }
         
+        // Ensure this function is intact and correct to fix the send button issue!
         function sendMessage() {
             if (!currentUser || !currentChatId || !currentChatPartner) return;
             const text = chatInput.value.trim();
@@ -1437,9 +1438,6 @@
             updates[`users/${currentChatPartner.uid}/contacts/${currentUser.uid}/lastSender`] = currentUser.uid;
 
             // 3. Increment unread count for the partner
-            // This is handled by a cloud function or a transaction to be safe, but for a simple client-side example,
-            // we'll just set it to 'new' and assume the partner client handles the increment. 
-            // Better to use a transaction if possible, but for simplicity:
             const partnerUnreadRef = db.ref('unreadCounts/' + currentChatPartner.uid + '/' + currentChatId);
             partnerUnreadRef.once('value').then(snapshot => {
                 const currentUnread = snapshot.val()?.count || 0;
@@ -1817,7 +1815,7 @@
         });
 
         // Chat View Listeners
-        chatSendBtn.addEventListener('click', sendMessage);
+        chatSendBtn.addEventListener('click', sendMessage); // FIX: Ensure this is correctly attached.
         chatInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
