@@ -493,7 +493,7 @@
                     <button id="delete-chat-btn" class="icon-btn" title="Clear Chat" style="color: #f44336;">🗑️</button>
                     <button id="voice-call-btn" class="icon-btn">🎤</button>
                     <button id="video-call-btn" class="icon-btn">📹</button>
-                    </div>
+                </div>
             </header>
             
             <div id="chat-messages">
@@ -691,7 +691,9 @@
         const chatContactUsername = document.getElementById('chat-contact-username');
         const voiceCallBtn = document.getElementById('voice-call-btn');
         const videoCallBtn = document.getElementById('video-call-btn');
-        const deleteChatBtn = document.getElementById('delete-chat-btn'); // MODIFICATION: New Reference
+        // START: ONLY ADDED NEW REFERENCE
+        const deleteChatBtn = document.getElementById('delete-chat-btn'); 
+        // END: ONLY ADDED NEW REFERENCE
         
         const ringtone = document.getElementById('ringtone');
 
@@ -1367,6 +1369,7 @@
         /**************************************************************************
          * Chat History Clearing Logic (Clear Chat)
          **************************************************************************/
+        // START: ONLY ADDED CLEAR CHAT FUNCTION
         async function clearChat() {
             if (!currentUser || !currentChatId || !currentChatPartner) return;
 
@@ -1402,8 +1405,8 @@
                 alert('An error occurred while clearing the chat.');
             }
         }
+        // END: ONLY ADDED CLEAR CHAT FUNCTION
         
-        // Ensure this function is intact and correct to fix the send button issue!
         function sendMessage() {
             if (!currentUser || !currentChatId || !currentChatPartner) return;
             const text = chatInput.value.trim();
@@ -1815,7 +1818,7 @@
         });
 
         // Chat View Listeners
-        chatSendBtn.addEventListener('click', sendMessage); // FIX: Ensure this is correctly attached.
+        chatSendBtn.addEventListener('click', sendMessage);
         chatInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -1841,9 +1844,9 @@
             chatMessages.innerHTML = ''; // Clear messages on exit
         });
         
-        // MODIFICATION START: Clear Chat Event Listener
+        // START: ONLY ADDED CLEAR CHAT EVENT LISTENER
         deleteChatBtn.addEventListener('click', clearChat);
-        // MODIFICATION END
+        // END: ONLY ADDED CLEAR CHAT EVENT LISTENER
 
         // Profile View Listeners
         menuBtn.addEventListener('click', async () => {
