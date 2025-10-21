@@ -490,9 +490,9 @@
                     <div class="username" id="chat-contact-username"></div>
                 </div>
                 <div id="header-actions">
+                    <button id="delete-chat-btn" class="icon-btn" title="Clear Chat" style="color: #f44336;">🗑️</button>
                     <button id="voice-call-btn" class="icon-btn">🎤</button>
                     <button id="video-call-btn" class="icon-btn">📹</button>
-                    <button id="delete-chat-btn" class="icon-btn" style="color: #f44336;">🗑️</button>
                     </div>
             </header>
             
@@ -626,7 +626,7 @@
           projectId: "nareshrana00-00",
           storageBucket: "nareshrana00-00.firebasestorage.app",
           messagingSenderId: "107536583275",
-          appId: "1:107536583275:web:c31a8d4c8a4327fcbe3f2e",
+          appId: "1:107536583275:web:c31a8d4c8a43277fcbe3f2e",
           measurementId: "G-P8B5F9ZNSP"
         };
         firebase.initializeApp(firebaseConfig);
@@ -691,10 +691,8 @@
         const chatContactUsername = document.getElementById('chat-contact-username');
         const voiceCallBtn = document.getElementById('voice-call-btn');
         const videoCallBtn = document.getElementById('video-call-btn');
-        // START OF NEW CODE: Delete Chat Button Reference
-        const deleteChatBtn = document.getElementById('delete-chat-btn');
-        // END OF NEW CODE
-
+        const deleteChatBtn = document.getElementById('delete-chat-btn'); // MODIFICATION: New Reference
+        
         const ringtone = document.getElementById('ringtone');
 
         // profile modal elements
@@ -1366,59 +1364,45 @@
             }
         }
         
-        // START OF NEW CODE: Delete Chat Function
-        async function deleteCurrentChat() {
-            if (!currentChatId || !currentChatPartner || !currentUser) return;
+        /**************************************************************************
+         * Chat History Clearing Logic (Clear Chat)
+         **************************************************************************/
+        async function clearChat() {
+            if (!currentUser || !currentChatId || !currentChatPartner) return;
 
-            if (!confirm(`Are you sure you want to delete your chat history with ${currentChatPartner.name || currentChatPartner.username}? This action will permanently remove all messages and cannot be undone.`)) {
+            const partnerName = currentChatPartner.name || currentChatPartner.username;
+
+            if (!confirm(`Are you sure you want to clear all messages in your chat with ${partnerName}? This action is irreversible for the chat history.`)) {
                 return;
             }
 
             try {
-                // 1. Delete all messages for this chatId. This deletes the history for the partner as well.
+                // 1. Delete all messages for this chat ID in the shared message path.
+                // This clears the history for both users.
                 await db.ref('messages/' + currentChatId).remove();
                 
-                // 2. Remove the contact from the *current user's* contacts list.
-                // This stops the chat from appearing in the user's home screen.
-                await db.ref('users/' + currentUser.uid + '/contacts/' + currentChatPartner.uid).remove();
-
-                // 3. Clear unread count for the current user and this chat
-                await db.ref('unreadCounts/' + currentUser.uid + '/' + currentChatId).remove();
-
-                // 4. Detach the chat listener
-                if(activeChatListener.ref) {
-                    activeChatListener.ref.off('child_added', activeChatListener.handler);
-                    activeChatListener = { ref: null, handler: null };
-                }
+                // 2. Update the current user's contact entry to reflect the clearance.
+                const updates = {};
+                updates[`users/${currentUser.uid}/contacts/${currentChatPartner.uid}/lastMessage`] = 'Chat history cleared.';
+                // Set the timestamp to now so the chat remains visible/at the top of the list.
+                updates[`users/${currentUser.uid}/contacts/${currentChatPartner.uid}/lastTimestamp`] = firebase.database.ServerValue.TIMESTAMP;
                 
-                // 5. Reset global chat state
-                currentChatId = null;
-                currentChatPartner = null;
-
-                // 6. Go back to main view and re-render contacts
-                showView('main');
-                showPanel('home-content');
+                await db.ref().update(updates);
                 
-                // Re-render contacts list to reflect the deleted chat immediately
-                // We fetch the latest profile data to ensure the contacts list is up-to-date
-                const profileSnap = await db.ref('users/' + currentUser.uid).once('value');
-                currentProfile = profileSnap.val();
-                if (currentProfile && currentProfile.contacts) {
-                     renderContacts(currentProfile.contacts);
-                } else {
-                     contactsList.innerHTML = ''; // If no contacts left
-                }
-                chatMessages.innerHTML = ''; // Clear chat view messages
+                // 3. Clear the visible messages in the current chat view
+                chatMessages.innerHTML = '';
                 
-                alert(`Chat with ${currentChatPartner.name || currentChatPartner.username} deleted successfully.`);
-
-            } catch(e) {
-                console.error("Error deleting chat:", e);
-                alert('Failed to delete chat. Please try again.');
+                alert(`Chat history with ${partnerName} cleared successfully.`);
+                
+                // Rerender contacts list to update the 'last message' text
+                if(currentProfile.contacts) renderContacts(currentProfile.contacts);
+                
+            } catch (error) {
+                console.error('Error clearing chat:', error);
+                alert('An error occurred while clearing the chat.');
             }
         }
-        // END OF NEW CODE
-
+        
         function sendMessage() {
             if (!currentUser || !currentChatId || !currentChatPartner) return;
             const text = chatInput.value.trim();
@@ -1859,9 +1843,9 @@
             chatMessages.innerHTML = ''; // Clear messages on exit
         });
         
-        // START OF NEW CODE: Delete Chat Event Listener
-        deleteChatBtn.addEventListener('click', deleteCurrentChat);
-        // END OF NEW CODE
+        // MODIFICATION START: Clear Chat Event Listener
+        deleteChatBtn.addEventListener('click', clearChat);
+        // MODIFICATION END
 
         // Profile View Listeners
         menuBtn.addEventListener('click', async () => {
